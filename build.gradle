@@ -4,9 +4,6 @@ plugins {
     id "com.google.protobuf" version "0.8.8"
 }
 
-group 'teachmeraft'
-version '1.0-SNAPSHOT'
-
 def grpcVersion = '1.18.0' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.5.1'
 def protocVersion = '3.5.1-1'
@@ -64,15 +61,15 @@ protobuf {
 startScripts.enabled = false
 
 task helloWorldServer(type: CreateStartScripts) {
-    mainClassName = 'systems.designing.raft.RaftServer'
-    applicationName = 'hello-world-server'
+    mainClassName = 'systems.designing.raft.Bootstrap'
+    applicationName = 'raftNode'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
 }
 
 task helloWorldClient(type: CreateStartScripts) {
-    mainClassName = 'systems.designing.raft.RaftClient'
-    applicationName = 'hello-world-client'
+    mainClassName = 'systems.designing.raft.testClient'
+    applicationName = 'testclient'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
 }
