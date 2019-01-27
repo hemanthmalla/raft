@@ -3,45 +3,52 @@ package systems.designing.raft;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import java.util.concurrent.TimeUnit;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A simple client that requests a greeting from the {@link RaftServer}.
+ * A simple client that requests a greeting from the {@link RaftNode}.
  */
 public class RaftClient {
     private static final Logger logger = Logger.getLogger(RaftClient.class.getName());
+    private static final String LOCALHOST = "localhost";
+    private final Map<Integer, RaftGrpc.RaftBlockingStub> clientMap = new HashMap<>();
 
-    private final ManagedChannel channel;
-    private final RaftGrpc.RaftBlockingStub blockingStub;
-
-    /** Construct client connecting to HelloWorld server at {@code host:port}. */
-    public RaftClient(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port)
-                // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
-                // needing certificates.
-                .usePlaintext()
-                .build());
+    /**
+     * Construct client connecting to HelloWorld server at {@code host:port}.
+     */
+    public RaftClient(List<Integer> clientPorts) {
+        for (Integer port : clientPorts) {
+            logger.info("Adding client for " + port);
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(LOCALHOST, port).usePlaintext().build();
+            clientMap.put(port, RaftGrpc.newBlockingStub(channel));
+        }
     }
 
-    /** Construct client for accessing HelloWorld server using the existing channel. */
-    RaftClient(ManagedChannel channel) {
-        this.channel = channel;
-        blockingStub = RaftGrpc.newBlockingStub(channel);
+    /**
+     * Broadcast hello to all nodes
+     *
+     * @param name
+     */
+    public void greetAll(String name) {
+        for (RaftGrpc.RaftBlockingStub client : clientMap.values()) {
+            greet(name, client);
+        }
     }
 
-    public void shutdown() throws InterruptedException {
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    }
-
-    /** Say hello to server. */
-    public void greet(String name) {
+    /**
+     * Say hello to a node.
+     */
+    private void greet(String name, RaftGrpc.RaftBlockingStub client) {
         logger.info("Will try to greet " + name + " ...");
         HelloRequest request = HelloRequest.newBuilder().setName(name).build();
         HelloReply response;
         try {
-            response = blockingStub.sayHello(request);
+            response = client.sayHello(request);
         } catch (StatusRuntimeException e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return;
