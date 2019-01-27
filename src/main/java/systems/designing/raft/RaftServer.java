@@ -26,8 +26,8 @@ import java.util.logging.Logger;
 /**
  * Server that manages startup/shutdown of a {@code Greeter} server.
  */
-public class HelloWorldServer {
-    private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
+public class RaftServer {
+    private static final Logger logger = Logger.getLogger(RaftServer.class.getName());
 
     private Server server;
 
@@ -35,7 +35,7 @@ public class HelloWorldServer {
         /* The port on which the server should run */
         int port = 50051;
         server = ServerBuilder.forPort(port)
-                .addService(new GreeterImpl())
+                .addService(new RaftImpl())
                 .build()
                 .start();
         logger.info("Server started, listening on " + port);
@@ -44,7 +44,7 @@ public class HelloWorldServer {
             public void run() {
                 // Use stderr here since the logger may have been reset by its JVM shutdown hook.
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                HelloWorldServer.this.stop();
+                RaftServer.this.stop();
                 System.err.println("*** server shut down");
             }
         });
@@ -69,12 +69,12 @@ public class HelloWorldServer {
      * Main launches the server from the command line.
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        final HelloWorldServer server = new HelloWorldServer();
+        final RaftServer server = new RaftServer();
         server.start();
         server.blockUntilShutdown();
     }
 
-    static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
+    static class RaftImpl extends RaftGrpc.RaftImplBase {
 
         @Override
         public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
