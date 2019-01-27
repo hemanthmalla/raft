@@ -4,9 +4,6 @@ plugins {
     id "com.google.protobuf" version "0.8.8"
 }
 
-group 'teachmeraft'
-version '1.0-SNAPSHOT'
-
 def grpcVersion = '1.18.0' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.5.1'
 def protocVersion = '3.5.1-1'
